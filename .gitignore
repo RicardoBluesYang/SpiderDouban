@@ -8,5 +8,8 @@ config.py
 __pycache__/
 *.pyc
 
+# 数据文件
+*.csv
+
 #优化目标
 ImprovingGoals.txt
