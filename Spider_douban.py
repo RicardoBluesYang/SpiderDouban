@@ -2,8 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import time
 import csv
-
-
+import pymysql
+from config import DB_CONFIG
 
 def get_movie_info(url):
     """
@@ -127,6 +127,60 @@ def save_to_csv(data, filename='douban_movies.csv'):
     print(f"数据已保存到 {filename}")
 
 
+def save_to_mysql(data):
+    """
+    将数据保存到MySQL数据库
+
+    参数说明：
+    data: 电影信息列表
+    """
+    if not data:
+        print("没有数据可保存")
+        return
+
+    # 步骤1: 连接数据库
+    # 使用 **DB_CONFIG 将字典解包为关键字参数
+    connection = pymysql.connect(**DB_CONFIG)
+    print("数据库连接成功！")
+
+    try:
+        # 步骤2: 创建游标
+        # 游标是用来执行SQL语句并获取结果的对象
+        cursor = connection.cursor()
+
+        # 步骤3: 准备SQL语句
+        # 使用 %s 作为占位符，防止SQL注入攻击
+        sql = """
+            INSERT INTO movies (title, rating, people, quote)
+            VALUES (%s, %s, %s, %s)
+        """
+
+        # 步骤4: 遍历数据并执行插入
+        for movie in data:
+            cursor.execute(sql, (
+                movie['电影名称'],
+                movie['评分'],
+                movie['评价人数'],
+                movie['简介']
+            ))
+
+        # 步骤5: 提交事务
+        # 只有提交后，数据才会真正保存到数据库
+        connection.commit()
+        print(f"成功保存 {len(data)} 条数据到数据库！")
+
+    except Exception as e:
+        # 如果出错，回滚事务，撤销所有操作
+        connection.rollback()
+        print(f"保存到数据库失败: {e}")
+
+    finally:
+        # 步骤6: 关闭连接
+        # 无论成功还是失败，都要关闭连接释放资源
+        connection.close()
+        print("数据库连接已关闭")
+
+
 def main():
     """
     主函数：控制爬虫的执行流程
@@ -141,7 +195,7 @@ def main():
     # 豆瓣Top250分为10页，每页25部电影
     # 我们只爬取前2页（50部电影）作为学习示例
     # URL规律: start=0是第1页，start=25是第2页，以此类推
-    for page in range(2):  # 爬取2页
+    for page in range(3):  # 爬取2页
         start = page * 25
         url = f'https://movie.douban.com/top250?start={start}'
 
@@ -161,6 +215,7 @@ def main():
     # 保存数据
     print(f"\n共爬取 {len(all_movies)} 部电影")
     save_to_csv(all_movies)
+    save_to_mysql(all_movies)
 
     # 打印前5部电影作为预览
     print("\n前5部电影预览:")

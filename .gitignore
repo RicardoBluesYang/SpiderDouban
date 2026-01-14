@@ -1,0 +1,12 @@
+# 配置文件（包含敏感信息）
+config.py
+
+# IDE
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+
+#优化目标
+ImprovingGoals.txt
