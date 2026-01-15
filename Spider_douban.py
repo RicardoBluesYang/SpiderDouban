@@ -2,8 +2,9 @@ import requests
 from bs4 import BeautifulSoup
 import time
 import csv
+import random
 import pymysql
-from config import DB_CONFIG
+from config import DB_CONFIG, USER_AGENTS
 
 def get_movie_info(url):
     """
@@ -20,7 +21,18 @@ def get_movie_info(url):
     # 为什么要设置请求头？
     # 因为网站会检查访问者是不是真实的浏览器，如果不设置，可能会被拒绝访问
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        # 随机选择一个User-Agent，避免被识别为爬虫
+        'User-Agent': random.choice(USER_AGENTS),
+        # 告诉服务器我们能接受的内容类型
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        # 期望的语言
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+        # 支持的压缩方式（移除br，因为requests默认不支持Brotli解压）
+        'Accept-Encoding': 'gzip, deflate',
+        # 来源页面，模拟从豆瓣首页跳转
+        'Referer': 'https://movie.douban.com/',
+        # 保持连接
+        'Connection': 'keep-alive',
     }
 
     try:

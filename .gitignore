@@ -13,3 +13,6 @@ __pycache__/
 
 #优化目标
 ImprovingGoals.txt
+
+#debug文件
+debug_request.py
