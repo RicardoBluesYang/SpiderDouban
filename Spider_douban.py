@@ -2,9 +2,12 @@ import requests
 from bs4 import BeautifulSoup
 import time
 import csv
-import random
 import pymysql
-from config import DB_CONFIG, USER_AGENTS
+from fake_useragent import UserAgent
+from config import DB_CONFIG
+
+# 创建 UserAgent 对象（全局复用，避免重复初始化）
+ua = UserAgent()
 
 def get_movie_info(url):
     """
@@ -22,7 +25,7 @@ def get_movie_info(url):
     # 因为网站会检查访问者是不是真实的浏览器，如果不设置，可能会被拒绝访问
     headers = {
         # 随机选择一个User-Agent，避免被识别为爬虫
-        'User-Agent': random.choice(USER_AGENTS),
+        'User-Agent': ua.random,
         # 告诉服务器我们能接受的内容类型
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
         # 期望的语言
@@ -39,6 +42,7 @@ def get_movie_info(url):
         # 步骤2: 发送GET请求
         # timeout=10 表示如果10秒内没响应就放弃
         print(f"正在请求: {url}")
+        print(f"使用的UA: {headers['User-Agent'][:60]}...")  # 打印UA前60个字符
         response = requests.get(url, headers=headers, timeout=10)
 
         # 步骤3: 检查请求是否成功
